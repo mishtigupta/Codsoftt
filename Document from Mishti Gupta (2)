@@ -1,0 +1,321 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "6d5e9b3b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "   RowNumber  CustomerId   Surname  CreditScore Geography  Gender  Age  \\\n",
+      "0          1    15634602  Hargrave          619    France  Female   42   \n",
+      "1          2    15647311      Hill          608     Spain  Female   41   \n",
+      "2          3    15619304      Onio          502    France  Female   42   \n",
+      "3          4    15701354      Boni          699    France  Female   39   \n",
+      "4          5    15737888  Mitchell          850     Spain  Female   43   \n",
+      "\n",
+      "   Tenure    Balance  NumOfProducts  HasCrCard  IsActiveMember  \\\n",
+      "0       2       0.00              1          1               1   \n",
+      "1       1   83807.86              1          0               1   \n",
+      "2       8  159660.80              3          1               0   \n",
+      "3       1       0.00              2          0               0   \n",
+      "4       2  125510.82              1          1               1   \n",
+      "\n",
+      "   EstimatedSalary  Exited  \n",
+      "0        101348.88       1  \n",
+      "1        112542.58       0  \n",
+      "2        113931.57       1  \n",
+      "3         93826.63       0  \n",
+      "4         79084.10       0  \n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "\n",
+    "file_path = r\"C:\\Users\\Student\\.cache\\kagglehub\\datasets\\shantanudhakadd\\bank-customer-churn-prediction\\versions\\1\\Churn_Modelling.csv\"\n",
+    "\n",
+    "df = pd.read_csv(file_path)\n",
+    "print(df.head())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "02808fe1",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 10000 entries, 0 to 9999\n",
+      "Data columns (total 14 columns):\n",
+      " #   Column           Non-Null Count  Dtype  \n",
+      "---  ------           --------------  -----  \n",
+      " 0   RowNumber        10000 non-null  int64  \n",
+      " 1   CustomerId       10000 non-null  int64  \n",
+      " 2   Surname          10000 non-null  object \n",
+      " 3   CreditScore      10000 non-null  int64  \n",
+      " 4   Geography        10000 non-null  object \n",
+      " 5   Gender           10000 non-null  object \n",
+      " 6   Age              10000 non-null  int64  \n",
+      " 7   Tenure           10000 non-null  int64  \n",
+      " 8   Balance          10000 non-null  float64\n",
+      " 9   NumOfProducts    10000 non-null  int64  \n",
+      " 10  HasCrCard        10000 non-null  int64  \n",
+      " 11  IsActiveMember   10000 non-null  int64  \n",
+      " 12  EstimatedSalary  10000 non-null  float64\n",
+      " 13  Exited           10000 non-null  int64  \n",
+      "dtypes: float64(2), int64(9), object(3)\n",
+      "memory usage: 1.1+ MB\n",
+      "None\n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "print(df.info())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "c634838f",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Index(['RowNumber', 'CustomerId', 'Surname', 'CreditScore', 'Geography',\n",
+      "       'Gender', 'Age', 'Tenure', 'Balance', 'NumOfProducts', 'HasCrCard',\n",
+      "       'IsActiveMember', 'EstimatedSalary', 'Exited'],\n",
+      "      dtype='object')\n",
+      "Exited\n",
+      "0    7963\n",
+      "1    2037\n",
+      "Name: count, dtype: int64\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(df.columns)\n",
+    "print(df['Exited'].value_counts())  # Target variable: 0 = Not churned, 1 = Churned\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "ddc78759",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = df.drop(['RowNumber', 'CustomerId', 'Surname'], axis=1)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "8928b396",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import LabelEncoder\n",
+    "\n",
+    "df['Gender'] = LabelEncoder().fit_transform(df['Gender'])  # Male = 1, Female = 0\n",
+    "df = pd.get_dummies(df, columns=['Geography'], drop_first=True)  # One-hot encode 'Geography'\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "7ca2d49e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X = df.drop('Exited', axis=1)\n",
+    "y = df['Exited']\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "b04e688e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+    "\n",
+    "# Feature scaling\n",
+    "scaler = StandardScaler()\n",
+    "X_train = scaler.fit_transform(X_train)\n",
+    "X_test = scaler.transform(X_test)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "73d21dfe",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Logistic Regression:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.83      0.96      0.89      1607\n",
+      "           1       0.55      0.20      0.29       393\n",
+      "\n",
+      "    accuracy                           0.81      2000\n",
+      "   macro avg       0.69      0.58      0.59      2000\n",
+      "weighted avg       0.78      0.81      0.77      2000\n",
+      "\n",
+      "ROC AUC: 0.7788998829864888\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.metrics import classification_report, roc_auc_score\n",
+    "\n",
+    "lr = LogisticRegression()\n",
+    "lr.fit(X_train, y_train)\n",
+    "y_pred_lr = lr.predict(X_test)\n",
+    "\n",
+    "print(\"Logistic Regression:\")\n",
+    "print(classification_report(y_test, y_pred_lr))\n",
+    "print(\"ROC AUC:\", roc_auc_score(y_test, lr.predict_proba(X_test)[:, 1]))\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "bbb930fc",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Random Forest:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.88      0.97      0.92      1607\n",
+      "           1       0.76      0.46      0.58       393\n",
+      "\n",
+      "    accuracy                           0.87      2000\n",
+      "   macro avg       0.82      0.71      0.75      2000\n",
+      "weighted avg       0.86      0.87      0.85      2000\n",
+      "\n",
+      "ROC AUC: 0.8571952225552646\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "\n",
+    "rf = RandomForestClassifier(n_estimators=100, random_state=42)\n",
+    "rf.fit(X_train, y_train)\n",
+    "y_pred_rf = rf.predict(X_test)\n",
+    "\n",
+    "print(\"Random Forest:\")\n",
+    "print(classification_report(y_test, y_pred_rf))\n",
+    "print(\"ROC AUC:\", roc_auc_score(y_test, rf.predict_proba(X_test)[:, 1]))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "278c3865",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Gradient Boosting:\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.88      0.96      0.92      1607\n",
+      "           1       0.75      0.49      0.59       393\n",
+      "\n",
+      "    accuracy                           0.87      2000\n",
+      "   macro avg       0.82      0.72      0.76      2000\n",
+      "weighted avg       0.86      0.87      0.86      2000\n",
+      "\n",
+      "ROC AUC: 0.8729564199882511\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.ensemble import GradientBoostingClassifier\n",
+    "\n",
+    "gb = GradientBoostingClassifier()\n",
+    "gb.fit(X_train, y_train)\n",
+    "y_pred_gb = gb.predict(X_test)\n",
+    "\n",
+    "print(\"Gradient Boosting:\")\n",
+    "print(classification_report(y_test, y_pred_gb))\n",
+    "print(\"ROC AUC:\", roc_auc_score(y_test, gb.predict_proba(X_test)[:, 1]))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "57c58ac7",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy Scores:\n",
+      "Logistic Regression: 0.811\n",
+      "Random Forest: 0.8665\n",
+      "Gradient Boosting: 0.8675\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.metrics import accuracy_score\n",
+    "\n",
+    "print(\"Accuracy Scores:\")\n",
+    "print(\"Logistic Regression:\", accuracy_score(y_test, y_pred_lr))\n",
+    "print(\"Random Forest:\", accuracy_score(y_test, y_pred_rf))\n",
+    "print(\"Gradient Boosting:\", accuracy_score(y_test, y_pred_gb))\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
